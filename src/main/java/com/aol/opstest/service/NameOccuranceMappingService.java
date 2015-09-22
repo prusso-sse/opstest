@@ -42,6 +42,8 @@ public class NameOccuranceMappingService {
 	 * Process the files and output the results to stdout
 	 */
 	public void processFiles() throws OpsTestException {
+		isInitialized();
+		
 		outputInfo("Processing files." + this.processInfo + "\n\n");
 		
 		populateNames();
@@ -49,7 +51,11 @@ public class NameOccuranceMappingService {
 		printResults();
 	}
 	
-	private void populateNames() throws OpsTestException {
+	public void populateNames() throws OpsTestException {
+		isInitialized();
+		
+		nameLineNumberMapping.clear();
+		
 		try(BufferedReader br = new BufferedReader(new FileReader(file2))) {
 		    for(String line; (line = br.readLine()) != null; ) {
 		        String name = line.trim();
@@ -63,7 +69,7 @@ public class NameOccuranceMappingService {
 		        }
 		        
 		        if(nameLineNumberMapping.containsKey(name)) {
-		        	outputWarning("populateNames()", "Warning - The name [" + name +
+		        	outputWarning("populateNames()", "The name [" + name +
 		        			"] occurs multiple times in the file [" + file2.getName() + "].  Compiling " +
 		        			"all entries into a single result.");
 		        }
@@ -79,7 +85,9 @@ public class NameOccuranceMappingService {
 		}
 	}
 	
-	private void processDataFile() throws OpsTestException {
+	public void processDataFile() throws OpsTestException {
+		isInitialized();
+		
 		int lineNumber = 1;
 		
 		try(BufferedReader br = new BufferedReader(new FileReader(file1))) {
@@ -103,7 +111,7 @@ public class NameOccuranceMappingService {
 		}
 	}
 	
-	private void lineTest(String line, int lineNumber) {
+	public void lineTest(String line, int lineNumber) {
 		/*
 		 * Since its possible for a name to occur within a "word" in the line (i.e.
 		 * the name we're looking for is conjoined with other characters) we have
@@ -120,7 +128,7 @@ public class NameOccuranceMappingService {
 		return;
 	}
 	
-	private void lineTestDistinct(String line, int lineNumber) {
+	public void lineTestDistinct(String line, int lineNumber) {
 		/*
 		 * This method looks for exact matches of each value in the line.  Meaning,
 		 * we only match the full words exactly.  Any other variation will not match.
@@ -142,7 +150,7 @@ public class NameOccuranceMappingService {
 		return;
 	}
 	
-	private void printResults() {
+	public void printResults() {
 		for (Map.Entry<String, List<Integer>> nameEntries : nameLineNumberMapping.entrySet()) {
 			String name = nameEntries.getKey();
 			List<Integer> lines = nameEntries.getValue();
@@ -160,11 +168,61 @@ public class NameOccuranceMappingService {
 		}
 	}
 	
+	public File getFile1() {
+		return file1;
+	}
+
+	public void setFile1(File file1) {
+		this.file1 = file1;
+	}
+
+	public File getFile2() {
+		return file2;
+	}
+
+	public void setFile2(File file2) {
+		this.file2 = file2;
+	}
+
+	public boolean isCaseSensitive() {
+		return caseSensitive;
+	}
+
+	public void setCaseSensitive(boolean caseSensitive) {
+		this.caseSensitive = caseSensitive;
+	}
+
+	public boolean isDistinct() {
+		return distinct;
+	}
+
+	public void setDistinct(boolean distinct) {
+		this.distinct = distinct;
+	}
+
+	public Map<String, List<Integer>> getNameLineNumberMapping() {
+		return nameLineNumberMapping;
+	}
+	
+	private void isInitialized() throws OpsTestException {
+		if((this.file1 == null) || (!this.file1.exists())) {
+			throw new OpsTestException(OpsTestExceptionId.INITIALIZATION_FAILED, "NameOccuranceMappingService",
+					"isInitialized()", "File1 has not been initialized.");
+		}
+		
+		if((this.file2 == null) || (!this.file2.exists())) {
+			throw new OpsTestException(OpsTestExceptionId.INITIALIZATION_FAILED, "NameOccuranceMappingService",
+					"isInitialized()", "File2 has not been initialized.");
+		}
+		
+		return;
+	}
+
 	private void outputInfo(String info) {
 		System.out.print(info);
 	}
 	
 	private void outputWarning(String method, String info) {
-		System.out.print("NameOccuranceMappingService." + method + " - " + info);
+		System.out.print("NameOccuranceMappingService." + method + " WARNING - " + info);
 	}
 }
