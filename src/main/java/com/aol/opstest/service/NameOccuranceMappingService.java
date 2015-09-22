@@ -18,14 +18,16 @@ public class NameOccuranceMappingService {
 	private File file1				= null;		// File containing name data
 	private File file2				= null;		// File containing names (one per line) 
 	private boolean caseSensitive	= false;	// case sensitive matching
+	private boolean distinct		= false;	// distinct matching
 	
 	private String processInfo = "";
 	private Map<String, List<Integer>> nameLineNumberMapping;
 
-	public NameOccuranceMappingService(File file1, File file2, boolean caseSensitive) {
+	public NameOccuranceMappingService(File file1, File file2, boolean caseSensitive, boolean distinct) {
 		this.file1 = file1;
 		this.file2 = file2;
 		this.caseSensitive = caseSensitive;
+		this.distinct = distinct;
 		
 		/*
 		 * Create our mapping structure so we only have to parse File1 once
@@ -86,7 +88,11 @@ public class NameOccuranceMappingService {
 		    		line = line.toLowerCase();
 		        }
 		    	
-		    	lineTest(line, lineNumber++);
+		    	if(distinct) {
+		    		lineTestDistinct(line, lineNumber++);
+		    	} else {
+		    		lineTest(line, lineNumber++);
+		    	}
 		    }
 		} catch (FileNotFoundException e) {
 			throw new OpsTestException(OpsTestExceptionId.INITIALIZATION_FAILED, "NameOccuranceMappingService",
@@ -108,6 +114,28 @@ public class NameOccuranceMappingService {
 			
 			if(line.contains(name)) {
 				nameEntries.getValue().add(lineNumber);
+			}
+		}
+		
+		return;
+	}
+	
+	private void lineTestDistinct(String line, int lineNumber) {
+		/*
+		 * This method looks for exact matches of each value in the line.  Meaning,
+		 * we only match the full words exactly.  Any other variation will not match.
+		 * 		Example:
+		 * 			Looking for the word "Bob"
+		 * 				- "this line has Bob in it" MATCHES
+		 * 				- "this line hasBobin it" NO MATCH
+		 */
+		String[] lineWords = line.split("\\s+");
+		
+		for(String word : lineWords) {
+			List<Integer> lineNumbers = nameLineNumberMapping.get(word);
+			
+			if(lineNumbers != null) {
+				lineNumbers.add(lineNumber);
 			}
 		}
 		

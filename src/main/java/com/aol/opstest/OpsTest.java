@@ -9,9 +9,10 @@ import com.aol.opstest.util.TestUtils;
 public class OpsTest {
 	private static final String file1Arg		= "-f1";	// FILE1 Argument
 	private static final String file2Arg		= "-f2";	// FILE2 Argument
+	private static final String caseArg			= "-c";		// Case Sensitive Argument
+	private static final String distinctArg		= "-d";		// Distinct Argument
 	private static final String file3Arg		= "-N";		// Name File Argument
 	private static final String fileSizeArg		= "-S";		// File Generated Size Argument
-	private static final String caseArg			= "-c";		// Case Sensitive Argument
 	private static final String helpArg 		= "-h";		// Help Argument
 	
 	private static File file1Value				= null;		// FILE1 Argument Value
@@ -19,6 +20,7 @@ public class OpsTest {
 	private static File file3Value				= null;		// Name File Argument Value
 	private static int fileSizeValue			= 100;		// Generated Size Value
 	private static boolean caseValue			= false;	// Case Sensitive value
+	private static boolean distinctValue		= false;	// Distinct value
 	
 	private static final int MAX_LINES 			= 10000;	// max size of generated file (in lines)
 	
@@ -36,7 +38,7 @@ public class OpsTest {
 			
 			TestUtils.createRandomDataFile(file3Value, fileSizeValue);
 		} else {
-			NameOccuranceMappingService nfm = new NameOccuranceMappingService(file1Value, file2Value, caseValue);
+			NameOccuranceMappingService nfm = new NameOccuranceMappingService(file1Value, file2Value, caseValue, distinctValue);
 			try {
 				nfm.processFiles();
 			} catch (OpsTestException e) {
@@ -139,6 +141,10 @@ public class OpsTest {
 			if (args[i].equals(caseArg)) {
 				caseValue = true;
 			}
+			
+			if (args[i].equals(distinctArg)) {
+				distinctValue = true;
+			}
 
 			if (args[i].equals(helpArg)) {
 				return false;
@@ -172,6 +178,10 @@ public class OpsTest {
                         + "      -c             :   Match names from FILE2 with case sensitivity.\n"
                         + "                         This means the name \"Bob\" does not\n"
                         + "                         match a line containing \"bOb\".\n"
+                        + "                         Default is FALSE.\n"
+                        + "      -d             :   Match names from FILE2 distinctly.\n"
+                        + "                         This means the name \"Bob\" will not match a\n"
+                        + "                         line containing \"123BobBks\".\n"
                         + "                         Default is FALSE.\n"
                         + "      -N  FILE3      :   Using FILE3, create a randomly generated\n"
                         + "                         data file.  FILE3 contains a list of names\n"
